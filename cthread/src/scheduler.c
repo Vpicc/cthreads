@@ -8,7 +8,7 @@
 #include "../include/scheduler.h"
 #include "../include/cdata.h"
 
-PFILA2 running, blocked, finished, joints; // Filas comuns para executando, bloqueados, terminados
+PFILA2 running, blocked, finished, filaJoints; // Filas comuns para executando, bloqueados, terminados
 
 PFILAPRIO filaPrioridades; // Fila de prioridades para aptos
 
@@ -21,6 +21,7 @@ int initMainThread() {
     initStdFila(&blocked);
     initStdFila(&running);
     initStdFila(&finished);
+    initStdFila(&filaJoints);
 
     createFilaPrioridades();
 
@@ -259,10 +260,23 @@ int yield() {
 void finishThread(){
     TCB_t * thread = getAndDeleteFirstFila(running); //Pega a thread da fila de execução
     thread->state = PROCST_TERMINO;
+
+/*Verifica se a thread que está finalizando não é era uma thread bloqueante e já faz o tratamento*/
+    joint * join;//variavel para varer a fila
+    FirstFila2(filaJoints); //Posiciona-se no inicio da fila
+    do {  //Varre a fila até o fim procurando pelo tid
+        join = (joint*)GetAtIteratorFila2(filaJoints);
+        if(join == NULL)
+            break;
+        if(join->tid_blockingThread == thread->tid){ //se a thread bloqueante é igual a que saiu
+            unblockThread(join->tid_blockedThread);
+        }
+    }while(NextFila2(filaJoints) == 0);
+/*Termino da verificação e tratamento de bloqueante*/
+
     AppendFila2(finished, thread); //Coloca a thread na fila de terminados
     chooseAndRunReadyThread(); //Executa uma nova thread.
 }
-
 int setRunningThreadPriority(int priority) {
     TCB_t * thread = getAndDeleteFirstFila(running); //Pega a thread da fila de execução
     if (thread == NULL) {
@@ -272,4 +286,68 @@ int setRunningThreadPriority(int priority) {
         AppendFila2(running, thread);
         return 0;
     }
+}
+int blockedForThread(int tid){
+    if(!isBlocker(tid)){
+        TCB_t * blockedThread = blockThread();//bloqueia a thread
+        /*Alocamento da JOIN*/
+        joint *join = malloc(sizeof(joint));
+        join->tid_blockedThread = blockedThread->tid;
+        join->tid_blockingThread = tid;
+        AppendFila2(filaJoints, join); //Coloca na fila de espera
+
+        int protectContext = 1;//Variavel para proteger contexto
+        getcontext(&(blockedThread->context));//ponto de retorno qnd desbloqueada
+        if(protectContext == 1){
+            protectContext = 0;
+            chooseAndRunReadyThread(); //Executa uma nova thread.
+        }
+        
+        return 0;
+    }
+    else
+        return -1;
+}
+
+TCB_t * blockThread(){
+    TCB_t * thread = getAndDeleteFirstFila(running);
+    thread->state = PROCST_BLOQ;
+    AppendFila2(blocked, thread); //Coloca a thread na fila de bloqueados
+    return thread; //Retorna a thread que foi bloqueada
+}
+
+void unblockThread(int tid_blockedThread){
+    FindThreadByNormalFila(blocked, tid_blockedThread);
+    TCB_t * blockedThread = (TCB_t*)GetAtIteratorFila2(blocked);
+    DeleteAtIteratorFila2(blocked);
+    blockedThread->state = PROCST_APTO;
+    insertFilaPrioridades(blockedThread);//bota na fila de aptos denovo
+}
+
+int FindThreadByNormalFila(PFILA2 fila, int tid){
+  TCB_t * itThread = NULL;
+  if(FirstFila2(fila) != 0) return -1; //Posiciona-se no inicio da fila
+  do {  //Varre a fila até o fim procurando pelo tid
+    itThread = (TCB_t*)GetAtIteratorFila2(fila);
+    if(itThread == NULL) break;
+    if(itThread->tid == tid){ //Se achar o tid, termina a busca
+      return 0;
+      break;
+    }
+  }while(NextFila2(fila) == 0);
+  return -1;
+}
+
+int isBlocker(int tid){
+    joint *join = malloc(sizeof(joint));;//variavel para percorrer a fila de joins
+	FirstFila2(filaJoints);//pega o começo da fila
+	do{
+		join = (joint*)GetAtIteratorFila2(filaJoints);
+		if(join == NULL)
+			return 0;
+		if(join->tid_blockingThread == tid){//só uma thread pode esperar
+			return -1;
+		}		
+	}while(NextFila2(filaJoints) == 0);
+    return 0;
 }
