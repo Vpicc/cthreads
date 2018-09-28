@@ -90,7 +90,7 @@ int cwait(csem_t *sem) {
 
 int csignal(csem_t *sem) {
 	sem->count = sem->count + 1;
-	if(sem->count >= 0){
+	if(sem->count < 1){
 
 		if(FirstFila2(sem->fila) != 0)
 			return ERROR;
