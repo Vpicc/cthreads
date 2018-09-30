@@ -61,15 +61,45 @@ int cjoin(int tid) {
 }
 
 int csem_init(csem_t *sem, int count) {
-	return -1;
+	if(sem == NULL)
+		sem = malloc(sizeof(csem_t*));
+	
+	sem->count=count;
+	sem->fila= malloc(sizeof(csem_t*));
+	return CreateFila2(sem->fila);
 }
 
 int cwait(csem_t *sem) {
-	return -1;
+	sem->count= sem->count - 1;
+	if(sem->count < 0){
+		int *retorna = malloc(sizeof(int));
+		*retorna = 1;
+		TCB_t *thread = blockThread();
+		if(AppendFila2(sem->fila, thread)!= 0)
+			return ERROR;
+
+		getcontext(&(thread->context));
+		if(*retorna == 1){
+			*retorna = 0;
+			chooseAndRunReadyThread();
+		}
+		free(retorna);
+	}
+	return SUCCESS;
 }
 
 int csignal(csem_t *sem) {
-	return -1;
+	sem->count = sem->count + 1;
+	if(sem->count < 1){
+
+		if(FirstFila2(sem->fila) != 0)
+			return ERROR;
+
+		TCB_t *thread=(TCB_t*)GetAtIteratorFila2(sem->fila);
+		unblockThread(thread->tid);
+		DeleteAtIteratorFila2(sem->fila);
+	}
+	return SUCCESS;
 }
 
 int cidentify (char *name, int size) {
