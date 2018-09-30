@@ -23,7 +23,7 @@ int ccreate (void* (*start)(void*), void *arg, int prio) {
 		return ERROR;
 	/*Criação do contexto*/	
 	ucontext_t *newThreadContext = malloc(sizeof(ucontext_t));
-	createContext(newThreadContext, start);
+	createContext(newThreadContext, start, arg);
 
 	/*Criação do TCB*/
 	TCB_t *newThread = malloc(sizeof(TCB_t));

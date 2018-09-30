@@ -11,7 +11,7 @@
 #define ERROR -1
 #define STACK_SIZE 1024*32
 
-void createContext(ucontext_t * context, void* (*start)(void*));
+void createContext(ucontext_t * context, void* (*start)(void*), void* arg);
 //int allocExitContext();
 
 #endif

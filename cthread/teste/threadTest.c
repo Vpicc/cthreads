@@ -13,9 +13,9 @@ void function5();
 void function6();
 
 int main(){
-
+    char arg1 = 'z';
     printf("Começando o programa\n\n");
-    int thread1 = ccreate((void*)&function1, 0, FPRIO_PRIORITY_MEDIUM);
+    int thread1 = ccreate((void*)&function1, (void*)&arg1, FPRIO_PRIORITY_MEDIUM);
     int thread2 = ccreate((void*)&function2, 0, FPRIO_PRIORITY_HIGH);
     int thread3 = ccreate((void*)&function3, 0, FPRIO_PRIORITY_MEDIUM);
     int thread4 = ccreate((void*)&function4, 0, FPRIO_PRIORITY_HIGH);
@@ -33,9 +33,10 @@ int main(){
     return 0;
 }
 
-void function1(){
+void function1(void* arg){
     
     printf("Sou a função 1\n");
+    printf("Argumento - caracter - %c\n", *(char*)arg);
     int thread5 = ccreate((void*)&function5, 0, FPRIO_PRIORITY_MEDIUM);
     printf("Tid thread 5: %d \n", thread5);
 
