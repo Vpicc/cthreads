@@ -14,9 +14,10 @@ void function6();
 
 int main(){
     char arg1 = 'z';
+    int arg2 = 2;
     printf("Começando o programa\n\n");
     int thread1 = ccreate((void*)&function1, (void*)&arg1, FPRIO_PRIORITY_MEDIUM);
-    int thread2 = ccreate((void*)&function2, 0, FPRIO_PRIORITY_HIGH);
+    int thread2 = ccreate((void*)&function2, (void*)&arg2, FPRIO_PRIORITY_HIGH);
     int thread3 = ccreate((void*)&function3, 0, FPRIO_PRIORITY_MEDIUM);
     int thread4 = ccreate((void*)&function4, 0, FPRIO_PRIORITY_HIGH);
     
@@ -61,8 +62,9 @@ void function6(){
     printf("Sou a funcao 6, dentro da 5, prioridade baixa\n");
 
 }
-void function2(){
+void function2(void* arg){
     printf("Sou a função 2\n");
+    printf("Argumento - inteiro - %d\n", *(int*)arg);
 }
 void function3(){
     printf("Sou a função 3\n");
