@@ -22,4 +22,4 @@ semaphoreTest:
 	$(CC) -o semaphoreTest semaphoreTest.c -L../lib -lcthread -Wall
 
 clean:
-	rm semaphoreTest schedulerTest cjoinTest threadTest supportTest
+	rm -rf semaphoreTest schedulerTest cjoinTest threadTest supportTest *.o *~

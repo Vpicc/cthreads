@@ -32,6 +32,11 @@ csem_t sem;
 
 
 int main(){
+  char * names = malloc(sizeof(int)*200);
+  cidentify(names,200);
+  printf("Nomes: \n%s", names);
+  printf("Wait sem Iniciar: Retorno %d\n",cwait(&sem));
+  printf("Signal sem Iniciar: Retorno %d\n",csignal(&sem));
 
   if(!csem_init(&sem, 1))
     printf("iniciou semaforo \n");

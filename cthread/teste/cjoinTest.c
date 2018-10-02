@@ -18,7 +18,7 @@ int thread4;
 int thread5;
 
 int main(){
-
+    printf("Tentando dar cjoin na thread0 estando na thread0: Retorno %d\n",cjoin(0));
     printf("Começando o programa\n\n");
     thread1 = ccreate((void*)&function1, 0, FPRIO_PRIORITY_HIGH);
 
@@ -46,7 +46,9 @@ void function2(){
     if(cjoin(20)){
         printf("\nFunção 2: Este tid não existe, não posso aguardar por ele\n");
     }
-    cjoin(thread3);
+    int result = cjoin(thread3);
+
+    printf("Resultado do wait da thread3: Retorno %d\n",result);
     printf("Função 2: Agora que a thread3 terminou, vou finalizar!\n");
 }
 void function3(){

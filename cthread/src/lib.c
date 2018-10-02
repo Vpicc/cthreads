@@ -56,8 +56,11 @@ int cyield(void) {
 }
 
 int cjoin(int tid) {
-	blockedForThread(tid);
-	return -1;
+	if (!has_init_cthreads) {
+		has_init_cthreads = 1;
+		initMainThread();
+	}
+	return blockedForThread(tid);
 }
 
 int csem_init(csem_t *sem, int count) {
@@ -70,6 +73,13 @@ int csem_init(csem_t *sem, int count) {
 }
 
 int cwait(csem_t *sem) {
+	if (!has_init_cthreads) {
+		has_init_cthreads = 1;
+		initMainThread();
+	}
+	if(sem == NULL || sem->fila == NULL){
+		return ERROR;
+	}
 	sem->count= sem->count - 1;
 	if(sem->count < 0){
 		int *retorna = malloc(sizeof(int));
@@ -89,6 +99,13 @@ int cwait(csem_t *sem) {
 }
 
 int csignal(csem_t *sem) {
+	if (!has_init_cthreads) {
+		has_init_cthreads = 1;
+		initMainThread();
+	}
+	if(sem == NULL || sem->fila == NULL){
+		return ERROR;
+	}
 	sem->count = sem->count + 1;
 	if(sem->count < 1){
 
@@ -103,7 +120,7 @@ int csignal(csem_t *sem) {
 }
 
 int cidentify (char *name, int size) {
-	strncpy (name, "Victor de Almeida Piccoli Ferreira - 221192\nLucas Cardoso Tavares - 264411\nSamuel Rudnicki - 214871", size);
+	strncpy (name, "Victor de Almeida Piccoli Ferreira - 221192\nLucas Cardoso Tavares - 264411\nSamuel Rudnicki - 214871\n", size);
 	return 0;
 }
 
