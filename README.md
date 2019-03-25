@@ -2,6 +2,17 @@
 A biblioteca cthread oferece uma interface de programação (API) que permitem o seu uso para o desenvolvimento de programas.
 
 O escalonador utilizado é do tipo preemptivo por prioridade, ou seja, se uma thread em execução criar outra com prioridade maior que a sua, a mesma deverá perder o processador (preempção) para a thread recém criada. Importante: a preempção só ocorre se a prioridade for superior; não ocorrerá caso for inferior ou igual.
+```
+typedef struct s_TCB {
+int tid; // identificador da thread
+int state; // estado em que a thread se encontra
+// 0: Criação; 1: Apto; 2: Execução; 3: Bloqueado e 4: Término
+int prio; // Prioridade associada a thread
+ucontext_t context; // contexto de execução da thread (SP, PC, GPRs e recursos)
+void *data; // aponta estruturas de dados, associadas à thread, necessárias à implementação
+} TCB_t;
+```
+
 
 ```
 int ccreate (void *(*start)(void *), void *arg, int prio);
